@@ -1,55 +1,54 @@
 /* eslint-disable qwik/jsx-img */
-import type { QwikChangeEvent, Signal } from '@builder.io/qwik';
+
 import { component$, useSignal } from '@builder.io/qwik';
-
 import { extractColors } from 'extract-colors'
+import ColorExtractedImage from './ColorExtractedImage'
 
-const handleOnChange$ = (event: QwikChangeEvent<HTMLInputElement>, colorList: Signal<any[]>) => {
-    console.log('neredeyim')
-    const file = event.target.files![0];
+import type { QwikChangeEvent, Signal } from '@builder.io/qwik';
+import type { FinalColor } from 'extract-colors/lib/types/Color';
 
-    const reader = new FileReader();
-    const image = document.getElementById('uploadedFile');
+interface ImageInfoList {
+    src: string;
+    color: FinalColor[];
+}
 
-    if (image) {
-        reader.onload = function (e) {
-            switch (typeof e.target?.result) {
-                case 'string':
-                    image.setAttribute('src', e.target.result);
+const handleOnChange$ = (event: QwikChangeEvent<HTMLInputElement>, imageList: Signal<ImageInfoList[]>) => {
+    function createColorExtractedImage(e: ProgressEvent<FileReader>) {
+        const source = e.target?.result
 
-                    extractColors(e.target.result)
-                        .then(arr => {
-                            // start with the area covering a bigger portion of the image
-                            colorList.value = arr
-                            console.log(arr)
-                        })
-                        .catch(console.error)
-                    break;
-            }
-        };
-        reader.readAsDataURL(file);
+        if (typeof source === 'string') {
+            extractColors(source)
+                .then(arr => {
+                    // start with the area covering a bigger portion of the image
+                    imageList.value = imageList.value.concat({ src: source, color: arr })
+                })
+                .catch(console.error)
+        }
     }
+
+    const files = event.target.files
+    imageList.value = []
+
+    if (files) {
+        for (const file of files) {
+            const reader = new FileReader()
+            reader.onload = createColorExtractedImage
+            reader.readAsDataURL(file)
+        }
+    }
+
 }
 
 export default component$(() => {
-    const colorList = useSignal<any[]>([])
+    const imageList = useSignal<ImageInfoList[]>([])
 
     return <div class="p-4 flex flex-col gap-4 container mx-auto">
         <h1 class="text-3xl font-bold text-black">Istanbul in Color</h1>
 
-        <input id="uploadInput" type="file" onChange$={(event) => handleOnChange$(event, colorList)} />
+        <input id="uploadInput" type="file" onChange$={(event) => handleOnChange$(event, imageList)} multiple />
 
-        <div id="fileContainer">
-            <img id="uploadedFile" style="max-width: 300px; max-height: 300px" />
+        <div id='images-container' class='flex flex-wrap gap-2'>
+            {imageList.value.map(i => <ColorExtractedImage key={i.src} src={i.src} colors={i.color} />)}
         </div>
-
-        <ul class="flex flex-wrap gap-2 justify-left">
-            {colorList.value.map(v => {
-                return <li class="leading-[0]" key={v.hex}>
-                    <span class="block border border-black border-opacity-20 h-6 rounded-xl w-6" style={{ backgroundColor: v.hex }}></span>
-                </li>
-            })}
-
-        </ul>
     </div>
 });
