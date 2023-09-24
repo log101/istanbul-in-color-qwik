@@ -1,0 +1,22 @@
+.page-link {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 10px 10px 10px 9px;
+}
+
+.page-list {
+	background-color: #f8f9fa;
+}
+
+.page-list.active {
+	background-color: #bcc869;
+}
+
+.page-list .page-link {
+	color: #343a40;
+}
+
+.page-list.active .page-link {
+	color: #fff;
+}
