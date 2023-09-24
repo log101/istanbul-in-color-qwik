@@ -41,6 +41,7 @@
     "vite-tsconfig-paths": "4.2.0"
   },
   "dependencies": {
+    "@qwikest/icons": "^0.0.8",
     "extract-colors": "^4.0.2"
   }
 }
