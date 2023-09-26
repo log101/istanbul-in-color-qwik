@@ -1,13 +1,12 @@
 import type { Signal } from '@builder.io/qwik';
-import { component$, useSignal } from '@builder.io/qwik';
+import { component$ } from '@builder.io/qwik';
 
 export interface PaginationProps {
   pageCount: Signal<number>
+  currentPage: Signal<number>
 }
 
-export const Pagination = component$<PaginationProps>(({pageCount}) => {
-  const currentPage = useSignal<number>(1)
-
+export const Pagination = component$<PaginationProps>(({pageCount, currentPage}) => {
   return (
     <div class="flex items-center justify-center py-10 lg:px-0 sm:px-6 px-4">
       <div class="lg:w-3/5 w-full  flex items-center justify-between border-t border-gray-200">

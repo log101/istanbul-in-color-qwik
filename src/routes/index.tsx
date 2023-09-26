@@ -5,12 +5,13 @@ import ColorExtractor from '~/components/color-extractor'
 import { Pagination } from "~/components/pagination/pagination";
 
 export default component$(() => {
-  const pageCount = useSignal<number>(10)
+  const pageCount = useSignal<number>(1)
+  const currentPage = useSignal<number>(1)
 
   return (
     <>
-      <ColorExtractor />
-      <Pagination pageCount={pageCount} />
+      <ColorExtractor pageCount={pageCount} currentPage={currentPage} />
+      <Pagination pageCount={pageCount} currentPage={currentPage}/>
     </>
   );
 });

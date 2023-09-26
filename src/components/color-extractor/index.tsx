@@ -12,7 +12,7 @@ interface ImageInfoList {
     color: FinalColor[];
 }
 
-const handleOnChange$ = (event: QwikChangeEvent<HTMLInputElement>, imageList: Signal<ImageInfoList[]>) => {
+const handleOnChange$ = (event: QwikChangeEvent<HTMLInputElement>, imageList: Signal<ImageInfoList[]>, pageCount: Signal<number>, currentPage: Signal<number>) => {
     function createColorExtractedImage(e: ProgressEvent<FileReader>) {
         const source = e.target?.result
 
@@ -26,26 +26,45 @@ const handleOnChange$ = (event: QwikChangeEvent<HTMLInputElement>, imageList: Si
         }
     }
 
-    const files = event.target.files
+    const files = chunkArray(event.target.files, 12)
+    pageCount.value = files.length
     imageList.value = []
 
-    if (files) {
-        for (const file of files) {
+
+    if (chunkArray.length > 1) {
+        for (const file of files[currentPage.value - 1]) {
             const reader = new FileReader()
             reader.onload = createColorExtractedImage
             reader.readAsDataURL(file)
         }
     }
 
+
 }
 
-export default component$(() => {
+export interface ImageListProps {
+    pageCount: Signal<number>
+    currentPage: Signal<number>
+}
+
+function chunkArray(array: FileList | null, size: number) {
+    if (!array) return []
+
+    const result = []
+    const arrayCopy = [...array]
+    while (arrayCopy.length > 0) {
+        result.push(arrayCopy.splice(0, size))
+    }
+    return result
+}
+
+export default component$<ImageListProps>(({ pageCount, currentPage }) => {
     const imageList = useSignal<ImageInfoList[]>([])
 
     return <div class="p-4 flex flex-col gap-4 container mx-auto">
         <h1 class="text-3xl font-bold text-black">Istanbul in Color</h1>
 
-        <input id="uploadInput" type="file" onChange$={(event) => handleOnChange$(event, imageList)} multiple />
+        <input id="uploadInput" type="file" onChange$={(event) => handleOnChange$(event, imageList, pageCount, currentPage)} multiple />
 
         <div id='images-container' class='flex flex-wrap gap-2'>
             {imageList.value.map(i => <ColorExtractedImage key={i.src} src={i.src} colors={i.color} />)}
